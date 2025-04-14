@@ -29,6 +29,9 @@ struct Cord4 {
     double y[4];
 };
 
+struct Mass4 {
+    double mass[4];
+};
 
 unsigned long long seed = 100;
 
@@ -76,13 +79,13 @@ int main(int argc, const char** argv) {
     printf("nextplanets: %p \n", nextcords);
 
     
-    double* masses = (double*)aligned_alloc(32, sizeof(double) * nplanets);
+    Mass4* masses = (Mass4*)aligned_alloc(32, sizeof(Mass4) * nplanets);
     assert(nplanets % 4 == 0 );
 
     for (int i=0; i<nplanets_chunks; i++) {
         for (int j = 0; j<4; j++) {
             double mass = randomDouble() * 10 + 0.2;
-            masses[i] = mass;
+            masses[i].mass[j] = mass;
             cords[i].x[j] = ( randomDouble() - 0.5 ) * 100 * pow(1 + nplanets, 0.4);
             cords[i].y[j] = ( randomDouble() - 0.5 ) * 100 * pow(1 + nplanets, 0.4);
             velo[i].vx[j] = randomDouble() * 5 - 2.5;
@@ -95,7 +98,7 @@ int main(int argc, const char** argv) {
 
     for (int i=0; i<timesteps; i++) {    
         for (int i=0; i<nplanets_chunks; i++) {
-            __m256d mi = _mm256_load_pd(&masses[i * 4]);
+            __m256d mi = _mm256_load_pd(masses[i].mass);
 
             for (int ii = 0; ii< 4; ii++) {
                 double vx = velo[i].vx[ii];
@@ -154,7 +157,7 @@ int main(int argc, const char** argv) {
 
                     // masses[i * nplanets + j]
                     
-                    __m256d mj = _mm256_load_pd(&masses[j * 4]);
+                    __m256d mj = _mm256_load_pd(masses[j].mass);
 
                     __m256d mij = _mm256_mul_pd(mi, mj);
 
