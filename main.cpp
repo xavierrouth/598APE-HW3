@@ -125,12 +125,12 @@ int main(int argc, const char** argv) {
                         double a = _mm256_cvtsd_f64(jy);
                         printf("jy: %f ", a);
                     }
-                    __m256d dx = _mm256_sub_pd(ix, jx);
+                    __m256d dx = _mm256_sub_pd(jx, ix);
                     if (i == 0 && ii == 0 && j == 1)   {
                         double a = _mm256_cvtsd_f64(dx);
                         printf("dx: %f ", a);
                     }
-                    __m256d dy = _mm256_sub_pd(iy, jy);
+                    __m256d dy = _mm256_sub_pd(jy, iy);
                     if (i == 0 && ii == 0 && j == 1)   {
                         double a = _mm256_cvtsd_f64(dy);
                         printf("dy: %f ", a);
