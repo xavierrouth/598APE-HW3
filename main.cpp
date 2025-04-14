@@ -190,10 +190,30 @@ int main(int argc, const char** argv) {
                     auto vdx = _mm256_mul_pd(b, dx);
                     auto vdy = _mm256_mul_pd(b, dy);
 
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(vdx);
+                        printf("vdx: %f ", a);
+                    }
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(vdy);  
+                        printf("vdy: %f ", a);
+                    }
+
                     __m256d temp = _mm256_hadd_pd(vdx, vdy);
                     __m256d shuffled = _mm256_permute4x64_pd(temp, _MM_SHUFFLE(3, 1, 2, 0));
                     __m256d hadd = _mm256_hadd_pd(shuffled, shuffled);
                     __m128d result = _mm256_castpd256_pd128(hadd);
+
+
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm_cvtsd_f64(result);
+                        printf("dvx: %f ", a);
+                    }
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm_cvtsd_f64(_mm_unpackhi_pd(result, result));  
+                        printf("dvy: %f ", a);
+                    }
+
                     vx += _mm_cvtsd_f64(result);
                     vy += _mm_cvtsd_f64(_mm_unpackhi_pd(result, result));  
                 }

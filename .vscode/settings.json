@@ -34,6 +34,8 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "variant": "cpp",
-        "cstddef": "cpp"
+        "cstddef": "cpp",
+        "chrono": "cpp",
+        "functional": "cpp"
     }
 }
