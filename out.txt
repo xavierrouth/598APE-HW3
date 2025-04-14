@@ -1,0 +1,3 @@
+planets: 0x17dce040 
+nextplanets: 0x17dd1f00 
+Total time to run simulation 0.005024 seconds, final location -384.521314 -776.593106

@@ -19,11 +19,14 @@ struct Planet {
     double vy;
 };
 
-struct PlanetVec4 {
-    double x[4];
-    double y[4];
+struct Velo4 {
     double vx[4];
     double vy[4];
+};
+
+struct Cord4 {
+    double x[4];
+    double y[4];
 };
 
 
@@ -60,69 +63,118 @@ int main(int argc, const char** argv) {
     dt = 0.001;
     G = 6.6743;
 
-    PlanetVec4* planets = (PlanetVec4*)aligned_alloc(32, sizeof(Planet) * nplanets);
-    PlanetVec4* nextplanets = (PlanetVec4*)aligned_alloc(32, sizeof(Planet) * nplanets);
-    PlanetVec4* tmp = planets;
+    int nplanets_chunks = nplanets/4;
 
-    printf("planets: %p \n", planets);
-    printf("nextplanets: %p \n", nextplanets);
+
+    Cord4* cords = (Cord4*)aligned_alloc(32, sizeof(Cord4) * nplanets_chunks);
+    Cord4* nextcords = (Cord4*)aligned_alloc(32, sizeof(Cord4) * nplanets_chunks);
+    Velo4* velo = (Velo4*)aligned_alloc(32, sizeof(Velo4) * nplanets_chunks);
+
+    Cord4* tmp = cords;
+
+    printf("planets: %p \n", cords);
+    printf("nextplanets: %p \n", nextcords);
 
     
     double* masses = (double*)aligned_alloc(32, sizeof(double) * nplanets);
     assert(nplanets % 4 == 0 );
 
-    int nplanets_chunks = nplanets/4;
     for (int i=0; i<nplanets_chunks; i++) {
         for (int j = 0; j<4; j++) {
             double mass = randomDouble() * 10 + 0.2;
             masses[i] = mass;
-            planets[i].x[j] = ( randomDouble() - 0.5 ) * 100 * pow(1 + nplanets, 0.4);
-            planets[i].y[j] = ( randomDouble() - 0.5 ) * 100 * pow(1 + nplanets, 0.4);
-            planets[i].vx[j] = randomDouble() * 5 - 2.5;
-            planets[i].vy[j] = randomDouble() * 5 - 2.5;
+            cords[i].x[j] = ( randomDouble() - 0.5 ) * 100 * pow(1 + nplanets, 0.4);
+            cords[i].y[j] = ( randomDouble() - 0.5 ) * 100 * pow(1 + nplanets, 0.4);
+            velo[i].vx[j] = randomDouble() * 5 - 2.5;
+            velo[i].vy[j] = randomDouble() * 5 - 2.5;
         }
     }
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
-    for (int i=0; i<timesteps; i++) {
-        // REPLACE with memcpy.
-        for (int i=0; i<nplanets_chunks; i++) {
-            for (int j=0; j<4; j++) {
-                nextplanets[i].vx[j] = planets[i].vx[j];
-                nextplanets[i].vy[j] = planets[i].vy[j];
-                nextplanets[i].x[j] = planets[i].x[j];
-                nextplanets[i].y[j] = planets[i].y[j];
-            }
-        }
-    
+    for (int i=0; i<timesteps; i++) {    
         for (int i=0; i<nplanets_chunks; i++) {
             __m256d mi = _mm256_load_pd(&masses[i * 4]);
 
             for (int ii = 0; ii< 4; ii++) {
-                double vx = planets[i].vx[ii];
-                double vy = planets[i].vy[ii];
-                double x = planets[i].x[ii];
-                double y = planets[i].y[ii];
+                double vx = velo[i].vx[ii];
+                double vy = velo[i].vy[ii];
+                double x = cords[i].x[ii];
+                double y = cords[i].y[ii];
                 for (int j=0; j<nplanets_chunks; j++) {
-                    __m256d ix = _mm256_load_pd(planets[i].x);
-                    __m256d jx = _mm256_load_pd(planets[j].x);
-                    __m256d iy = _mm256_load_pd(planets[i].y);
-                    __m256d jy = _mm256_load_pd(planets[j].y);
+                    __m256d ix = _mm256_load_pd(cords[i].x);
+                    if (i == 0 && ii == 0 && j == 1) {
+                        double a = _mm256_cvtsd_f64(ix);
+                        printf("ix: %f ", a);
+                    }
+
+                    __m256d jx = _mm256_load_pd(cords[j].x);
+                    if (i == 0 && ii == 0 && j == 1)  {
+                        double a = _mm256_cvtsd_f64(jx);
+                        printf("jx: %f ", a);
+                    }
+
+                    __m256d iy = _mm256_load_pd(cords[i].y);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(iy);
+                        printf("iy: %f ", a);
+                    }
+                    __m256d jy = _mm256_load_pd(cords[j].y);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(jy);
+                        printf("jy: %f ", a);
+                    }
                     __m256d dx = _mm256_sub_pd(ix, jx);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(dx);
+                        printf("dx: %f ", a);
+                    }
                     __m256d dy = _mm256_sub_pd(iy, jy);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(dy);
+                        printf("dy: %f ", a);
+                    }
                     __m256d s1 = _mm256_fmadd_pd(dx, dx, _mm256_set1_pd(0.001));
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(s1);
+                        printf("s1: %f ", a);
+                    }
+
                     __m256d s2 = _mm256_fmadd_pd(dy, dy, s1);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(s2);
+                        printf("s2: %f ", a);
+                    }
                     __m256d sqrt = _mm256_sqrt_pd(s2);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(sqrt);
+                        printf("sqrt: %f ", a);
+                    }
+
                     // masses[i * nplanets + j]
                     
                     __m256d mj = _mm256_load_pd(&masses[j * 4]);
+
                     __m256d mij = _mm256_mul_pd(mi, mj);
 
-                    __m256d div = _mm256_div_pd(mij, sqrt);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(mij);
+                        printf("mij: %f ", a);
+                    }
 
+
+                    __m256d div = _mm256_div_pd(mij, sqrt);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(div);
+                        printf("div: %f ", a);
+                    }
                     __m256d dtv = _mm256_set1_pd(dt);
+                    if (i == 0 && ii == 0 && j == 1)   {
+                        double a = _mm256_cvtsd_f64(dtv);
+                        printf("dtv: %f ", a);
+                    }
+
                     auto a = _mm256_mul_pd(div, div);
                     auto b = _mm256_mul_pd(a, div);
                     auto c = _mm256_mul_pd(b, dtv);
@@ -139,20 +191,20 @@ int main(int argc, const char** argv) {
                 x += dt * vx;
                 y += dt * vy;
     
-                nextplanets[i].vx[ii] = vx;
-                nextplanets[i].vy[ii] = vy;
-                nextplanets[i].x[ii] = x;
-                nextplanets[i].y[ii] = y;
+                velo[i].vx[ii] = vx;
+                velo[i].vy[ii] = vy;
+                nextcords[i].x[ii] = x;
+                nextcords[i].y[ii] = y;
             }
         }
-        tmp = planets;
-        planets = nextplanets;
-        nextplanets = tmp;
+        tmp = cords;
+        cords = nextcords;
+        nextcords = tmp;
     }
 
     gettimeofday(&end, NULL);
-    printf("Total time to run simulation %0.6f seconds, final location %f %f\n", tdiff(&start, &end), planets[nplanets_chunks-1].x[3], planets[nplanets_chunks-1].y[3]);
-    free(planets);
-    free(nextplanets);
+    printf("Total time to run simulation %0.6f seconds, final location %f %f\n", tdiff(&start, &end), cords[nplanets_chunks-1].x[3], cords[nplanets_chunks-1].y[3]);
+    free(cords);
+    free(nextcords);
     return 0;    
 }
