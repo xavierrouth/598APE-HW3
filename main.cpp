@@ -159,6 +159,12 @@ int main(int argc, const char** argv) {
                     __m256d mij = _mm256_mul_pd(mi, mj);
 
                     if (i == 0 && ii == 0 && j == 1)   {
+                        double aa = _mm256_cvtsd_f64(mi);
+                        printf("mi: %f ", aa);
+
+                        double ab = _mm256_cvtsd_f64(mj);
+                        printf("mj: %f ", ab);
+
                         double a = _mm256_cvtsd_f64(mij);
                         printf("mij: %f ", a);
                     }
