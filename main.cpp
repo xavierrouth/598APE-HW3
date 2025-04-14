@@ -97,9 +97,10 @@ int main(int argc, const char** argv) {
     gettimeofday(&start, NULL);
 
     for (int i=0; i<timesteps; i++) {    
+        #pragma omp parallel for
         for (int i=0; i<nplanets_chunks; i++) {
             __m256d mi = _mm256_load_pd(masses[i].mass);
-
+            
             for (int ii = 0; ii< 4; ii++) {
                 double vx = velo[i].vx[ii];
                 double vy = velo[i].vy[ii];
@@ -107,53 +108,53 @@ int main(int argc, const char** argv) {
                 double y = cords[i].y[ii];
                 for (int j=0; j<nplanets_chunks; j++) {
                     __m256d ix = _mm256_load_pd(cords[i].x);
-                    if (i == 0 && ii == 0 && j == 1) {
-                        double a = _mm256_cvtsd_f64(ix);
-                        printf("ix: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1) {
+                    //     double a = _mm256_cvtsd_f64(ix);
+                    //     printf("ix: %f ", a);
+                    // }
 
                     __m256d jx = _mm256_load_pd(cords[j].x);
-                    if (i == 0 && ii == 0 && j == 1)  {
-                        double a = _mm256_cvtsd_f64(jx);
-                        printf("jx: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)  {
+                    //     double a = _mm256_cvtsd_f64(jx);
+                    //     printf("jx: %f ", a);
+                    // }
 
                     __m256d iy = _mm256_load_pd(cords[i].y);
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(iy);
-                        printf("iy: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(iy);
+                    //     printf("iy: %f ", a);
+                    // }
                     __m256d jy = _mm256_load_pd(cords[j].y);
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(jy);
-                        printf("jy: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(jy);
+                    //     printf("jy: %f ", a);
+                    // }
                     __m256d dx = _mm256_sub_pd(jx, ix);
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(dx);
-                        printf("dx: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(dx);
+                    //     printf("dx: %f ", a);
+                    // }
                     __m256d dy = _mm256_sub_pd(jy, iy);
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(dy);
-                        printf("dy: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(dy);
+                    //     printf("dy: %f ", a);
+                    // }
                     __m256d s1 = _mm256_fmadd_pd(dx, dx, _mm256_set1_pd(0.001));
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(s1);
-                        printf("s1: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(s1);
+                    //     printf("s1: %f ", a);
+                    // }
 
                     __m256d s2 = _mm256_fmadd_pd(dy, dy, s1);
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(s2);
-                        printf("s2: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(s2);
+                    //     printf("s2: %f ", a);
+                    // }
                     __m256d sqrt = _mm256_sqrt_pd(s2);
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(sqrt);
-                        printf("sqrt: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(sqrt);
+                    //     printf("sqrt: %f ", a);
+                    // }
 
                     // masses[i * nplanets + j]
                     
@@ -161,43 +162,46 @@ int main(int argc, const char** argv) {
 
                     __m256d mij = _mm256_mul_pd(mi, mj);
 
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double aa = _mm256_cvtsd_f64(mi);
-                        printf("mi: %f ", aa);
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double aa = _mm256_cvtsd_f64(mi);
+                    //     printf("mi: %f ", aa);
 
-                        double ab = _mm256_cvtsd_f64(mj);
-                        printf("mj: %f ", ab);
+                    //     double ab = _mm256_cvtsd_f64(mj);
+                    //     printf("mj: %f ", ab);
 
-                        double a = _mm256_cvtsd_f64(mij);
-                        printf("mij: %f ", a);
-                    }
+                    //     double a = _mm256_cvtsd_f64(mij);
+                    //     printf("mij: %f ", a);
+                    // }
 
 
                     __m256d div = _mm256_div_pd(mij, sqrt);
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(div);
-                        printf("div: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(div);
+                    //     printf("div: %f ", a);
+                    // }
                     __m256d dtv = _mm256_set1_pd(dt);
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(dtv);
-                        printf("dtv: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(dtv);
+                    //     printf("dtv: %f ", a);
+                    // }
 
-                    auto a = _mm256_mul_pd(div, div);
-                    auto b = _mm256_mul_pd(a, div);
-                    auto c = _mm256_mul_pd(b, dtv);
-                    auto vdx = _mm256_mul_pd(b, dx);
-                    auto vdy = _mm256_mul_pd(b, dy);
+                    auto invdist2 = _mm256_mul_pd(div, div);
+                    auto invdist3 = _mm256_mul_pd(invdist2, div);
+                    auto invdist3dt = _mm256_mul_pd(invdist3, _mm256_set1_pd(dt));
 
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(vdx);
-                        printf("vdx: %f ", a);
-                    }
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm256_cvtsd_f64(vdy);  
-                        printf("vdy: %f ", a);
-                    }
+                    auto vdx = _mm256_mul_pd(invdist3dt, dx);
+
+                    auto vdy = _mm256_mul_pd(invdist3dt, dy);
+
+
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(vdx);
+                    //     printf("vdx: %f ", a);
+                    // }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm256_cvtsd_f64(vdy);  
+                    //     printf("vdy: %f ", a);
+                    // }
 
                     __m256d temp = _mm256_hadd_pd(vdx, vdy);
                     __m256d shuffled = _mm256_permute4x64_pd(temp, _MM_SHUFFLE(3, 1, 2, 0));
@@ -205,14 +209,14 @@ int main(int argc, const char** argv) {
                     __m128d result = _mm256_castpd256_pd128(hadd);
 
 
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm_cvtsd_f64(result);
-                        printf("dvx: %f ", a);
-                    }
-                    if (i == 0 && ii == 0 && j == 1)   {
-                        double a = _mm_cvtsd_f64(_mm_unpackhi_pd(result, result));  
-                        printf("dvy: %f ", a);
-                    }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm_cvtsd_f64(result);
+                    //     printf("dvx: %f ", a);
+                    // }
+                    // if (i == 0 && ii == 0 && j == 1)   {
+                    //     double a = _mm_cvtsd_f64(_mm_unpackhi_pd(result, result));  
+                    //     printf("dvy: %f ", a);
+                    // }
 
                     vx += _mm_cvtsd_f64(result);
                     vy += _mm_cvtsd_f64(_mm_unpackhi_pd(result, result));  
